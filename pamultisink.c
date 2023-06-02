@@ -161,7 +161,6 @@ static char *sink_select_from_user(char *args, size_t len) {
     while (nr_selected_sinks < SINK_MAX) {
         int c, idx, input_len;
         char input[SINK_INPUT_MAX];
-        bool bogus = true;
 
         printf("Enter a sink number to add (press Enter to finish): ");
         if (!fgets(input, sizeof(input), stdin)) {
@@ -180,12 +179,9 @@ static char *sink_select_from_user(char *args, size_t len) {
             strncpy(selected_sinks[nr_selected_sinks], sinks[idx].name,
                     SINK_ATTR_MAX - 1);
             nr_selected_sinks++;
-            bogus = false;
         }
 
-        if (bogus && input[strlen(input) - 1] != '\n') {
-            // User is taking the Michael, jettison their garbage input so we
-            // don't get it next round
+        if (input[strlen(input) - 1] != '\n') {
             while ((c = getchar()) != '\n' && c != EOF) {
             }
         }
