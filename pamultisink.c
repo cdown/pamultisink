@@ -6,10 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define SINK_MAX 128
-#define SINK_ATTR_MAX 128
-#define SINK_INPUT_MAX 128
-#define MODULE_ARGS_MAX 2048
+#define MODULE_ARGS_MAX 2048 // Large enough for all the combine sink args
+#define SINK_INPUT_MAX 128   // Large enough for sink names and inputs
+#define SINK_MAX 128         // Max number of sinks
 
 #define MODULE_NAME "module-combine-sink"
 #define APP_NAME "pamultisink"
@@ -31,8 +30,8 @@
 static char output_buf[512];
 
 struct ms_sink_info {
-    char name[SINK_ATTR_MAX];
-    char description[SINK_ATTR_MAX];
+    char name[SINK_INPUT_MAX];
+    char description[SINK_INPUT_MAX];
     bool selected;
 };
 static struct ms_sink_info sinks[SINK_MAX];
@@ -99,10 +98,10 @@ static void sink_populate_local_cb(pa_context *c, const pa_sink_info *i,
         return;
     }
 
-    strncpy(entry->name, i->name, SINK_ATTR_MAX);
-    strncpy(entry->description, i->description, SINK_ATTR_MAX);
-    entry->name[SINK_ATTR_MAX - 1] = '\0';
-    entry->description[SINK_ATTR_MAX - 1] = '\0';
+    strncpy(entry->name, i->name, SINK_INPUT_MAX);
+    strncpy(entry->description, i->description, SINK_INPUT_MAX);
+    entry->name[SINK_INPUT_MAX - 1] = '\0';
+    entry->description[SINK_INPUT_MAX - 1] = '\0';
     nr_sinks++;
 }
 
@@ -117,7 +116,7 @@ static void module_find_and_unload_combined_sink_cb(pa_context *c,
 }
 
 static void module_make_args(char *buf, size_t buf_length,
-                             char sel_sinks[][SINK_ATTR_MAX],
+                             char sel_sinks[][SINK_INPUT_MAX],
                              size_t nr_sel_sinks) {
     size_t pos = 0, i;
 
@@ -162,7 +161,7 @@ static int op_finish_and_unref(pa_context *pa_ctx, pa_mainloop *pa_ml,
     } while (0)
 
 static char *sink_select_from_user(char *args, size_t len) {
-    char selected_sinks[SINK_MAX][SINK_ATTR_MAX];
+    char selected_sinks[SINK_MAX][SINK_INPUT_MAX];
     size_t nr_selected_sinks = 0;
 
     printf("Available sinks:\n");
@@ -209,7 +208,7 @@ static char *sink_select_from_user(char *args, size_t len) {
             retryable_sink_select_error("Sink already selected.\n");
         } else {
             strncpy(selected_sinks[nr_selected_sinks], sinks[idx].name,
-                    SINK_ATTR_MAX - 1);
+                    SINK_INPUT_MAX - 1);
             sinks[idx].selected = true;
             nr_selected_sinks++;
             // Clear the upcoming line, it may have had an error before.
