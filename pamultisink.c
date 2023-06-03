@@ -33,6 +33,7 @@ static char output_buf[512];
 struct ms_sink_info {
     char name[SINK_ATTR_MAX];
     char description[SINK_ATTR_MAX];
+    bool selected;
 };
 static struct ms_sink_info sinks[SINK_MAX];
 static int nr_sinks;
@@ -162,7 +163,7 @@ static char *sink_select_from_user(char *args, size_t len) {
         int c, idx, input_len;
         char input[SINK_INPUT_MAX];
 
-        printf("Enter a sink number to add (press Enter to finish): ");
+        printf("Sink number to add, enter to finish: ");
         if (!fgets(input, sizeof(input), stdin)) {
             fprintf(stderr, "Error reading input.\n");
             return NULL;
@@ -175,9 +176,12 @@ static char *sink_select_from_user(char *args, size_t len) {
             fprintf(stderr, "Invalid input.\n");
         } else if (idx < 0 || idx >= nr_sinks) {
             fprintf(stderr, "Invalid sink number.\n");
+        } else if (sinks[idx].selected) {
+            fprintf(stderr, "Sink already selected.\n");
         } else {
             strncpy(selected_sinks[nr_selected_sinks], sinks[idx].name,
                     SINK_ATTR_MAX - 1);
+            sinks[idx].selected = true;
             nr_selected_sinks++;
         }
 
