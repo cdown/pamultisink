@@ -17,6 +17,7 @@
 #define die(format, ...)                                                       \
     do {                                                                       \
         fprintf(stderr, "FATAL: " format, __VA_ARGS__);                        \
+        cleanup();                                                             \
         abort();                                                               \
     } while (0)
 
@@ -36,6 +37,20 @@ struct ms_sink_info {
 };
 static struct ms_sink_info sinks[SINK_MAX];
 static int nr_sinks;
+
+static pa_mainloop *pa_ml;
+static pa_mainloop_api *pa_mlapi;
+static pa_context *pa_ctx;
+
+static void cleanup(void) {
+    if (pa_ctx) {
+        pa_context_disconnect(pa_ctx);
+        pa_context_unref(pa_ctx);
+    }
+    if (pa_ml) {
+        pa_mainloop_free(pa_ml);
+    }
+}
 
 static size_t snprintf_check(char *buf, size_t len, const char *fmt, ...) {
     int needed;
@@ -289,9 +304,6 @@ static int run_pa_mainloop(pa_context *pa_ctx, pa_mainloop *pa_ml) {
 }
 
 int main(void) {
-    pa_mainloop *pa_ml;
-    pa_mainloop_api *pa_mlapi;
-    pa_context *pa_ctx;
     int exit_code;
 
     expect(setvbuf(stdout, output_buf, _IOLBF, sizeof(output_buf)) == 0);
@@ -303,9 +315,7 @@ int main(void) {
 
     exit_code = !!run_pa_mainloop(pa_ctx, pa_ml);
 
-    pa_context_disconnect(pa_ctx);
-    pa_context_unref(pa_ctx);
-    pa_mainloop_free(pa_ml);
+    cleanup();
 
     return exit_code;
 }
