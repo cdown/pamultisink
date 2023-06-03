@@ -52,6 +52,8 @@ static size_t snprintf_check(char *buf, size_t len, const char *fmt, ...) {
     return (size_t)needed;
 }
 
+#define strncpy_check(dst, src, len) snprintf_check(dst, len, "%s", src)
+
 static bool sink_is_managed(const char *name) {
     // If we somehow ended up with multiple they will have ".[idx]" appended,
     // so only check the beginning
@@ -98,8 +100,8 @@ static void sink_populate_local_cb(pa_context *c, const pa_sink_info *i,
         return;
     }
 
-    strncpy(entry->name, i->name, SINK_INPUT_MAX);
-    strncpy(entry->description, i->description, SINK_INPUT_MAX);
+    strncpy_check(entry->name, i->name, SINK_INPUT_MAX);
+    strncpy_check(entry->description, i->description, SINK_INPUT_MAX);
     entry->name[SINK_INPUT_MAX - 1] = '\0';
     entry->description[SINK_INPUT_MAX - 1] = '\0';
     nr_sinks++;
@@ -207,8 +209,8 @@ static char *sink_select_from_user(char *args, size_t len) {
         } else if (sinks[idx].selected) {
             retryable_sink_select_error("Sink already selected.\n");
         } else {
-            strncpy(selected_sinks[nr_selected_sinks], sinks[idx].name,
-                    SINK_INPUT_MAX - 1);
+            strncpy_check(selected_sinks[nr_selected_sinks], sinks[idx].name,
+                          SINK_INPUT_MAX - 1);
             sinks[idx].selected = true;
             nr_selected_sinks++;
             // Clear the upcoming line, it may have had an error before.
