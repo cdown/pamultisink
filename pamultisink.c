@@ -124,8 +124,9 @@ static void sink_populate_local_cb(pa_context *c, const pa_sink_info *i,
 static void module_find_and_unload_combined_sink_cb(pa_context *c,
                                                     const pa_module_info *i,
                                                     int eol, void *userdata) {
+    bool *unloaded = userdata;
     if (!eol && strcmp(i->name, MODULE_NAME) == 0) {
-        fprintf(stderr, "Found existing combined sinks, unloading.\n");
+        *unloaded = true;
         pa_operation_unref(
             pa_context_unload_module(c, i->index, module_unload_cb, userdata));
     }
@@ -256,12 +257,18 @@ static char *sink_select_from_user(char *args, size_t len) {
 static int run_pa_mainloop(pa_context *pa_ctx, pa_mainloop *pa_ml) {
     int pa_errno;
     char args[MODULE_ARGS_MAX];
+    pa_operation *unload_op;
+    bool unloaded = false;
 
     for (;;) {
         pa_mainloop_iterate(pa_ml, 1, NULL);
 
         switch (pa_context_get_state(pa_ctx)) {
             case PA_CONTEXT_READY:
+                unload_op = pa_context_get_module_info_list(
+                    pa_ctx, module_find_and_unload_combined_sink_cb,
+                    (void *)&unloaded);
+
                 expect(op_finish_and_unref(
                            pa_ctx, pa_ml,
                            pa_context_get_sink_info_list(
@@ -276,11 +283,11 @@ static int run_pa_mainloop(pa_context *pa_ctx, pa_mainloop *pa_ml) {
                     return -EINVAL;
                 }
 
-                expect(op_finish_and_unref(
-                           pa_ctx, pa_ml,
-                           pa_context_get_module_info_list(
-                               pa_ctx, module_find_and_unload_combined_sink_cb,
-                               NULL)) == 0);
+                // Must be done or we may unload the new one
+                expect(op_finish_and_unref(pa_ctx, pa_ml, unload_op) == 0);
+                if (unloaded) {
+                    printf("Found and unloaded existing combined sinks.\n");
+                }
 
                 expect(op_finish_and_unref(
                            pa_ctx, pa_ml,
