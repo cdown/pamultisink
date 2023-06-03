@@ -150,6 +150,17 @@ static int op_finish_and_unref(pa_context *pa_ctx, pa_mainloop *pa_ml,
     return ret;
 }
 
+// Print as usual, and then move the cursor one line up to make redrawing work.
+// Not to stderr, since then we don't know if we should move up or not since we
+// don't know where it's going.
+#define move_up_n_lines(n) printf("\033[%dA", n)
+#define clear_line() printf("\033[K")
+#define retryable_sink_select_error(...)                                       \
+    do {                                                                       \
+        printf(__VA_ARGS__);                                                   \
+        move_up_n_lines(1);                                                    \
+    } while (0)
+
 static char *sink_select_from_user(char *args, size_t len) {
     char selected_sinks[SINK_MAX][SINK_ATTR_MAX];
     size_t nr_selected_sinks = 0;
@@ -178,6 +189,8 @@ static char *sink_select_from_user(char *args, size_t len) {
             current[pos - 1] = '\0';
         }
 
+        // May be longer going from "none" to the first sink, so clear
+        clear_line();
         printf("Sink number to add, enter to finish (current: %s): ", current);
 
         if (!fgets(input, sizeof(input), stdin)) {
@@ -189,22 +202,27 @@ static char *sink_select_from_user(char *args, size_t len) {
         }
         if (sscanf(input, "%d%n", &idx, &input_len) != 1 ||
             input[input_len] != '\n') {
-            fprintf(stderr, "Invalid input.\n");
+            retryable_sink_select_error("Invalid input.\n");
         } else if (idx < 0 || idx >= nr_sinks) {
-            fprintf(stderr, "Invalid sink number.\n");
+            retryable_sink_select_error("Invalid sink number.\n");
         } else if (sinks[idx].selected) {
-            fprintf(stderr, "Sink already selected.\n");
+            retryable_sink_select_error("Sink already selected.\n");
         } else {
             strncpy(selected_sinks[nr_selected_sinks], sinks[idx].name,
                     SINK_ATTR_MAX - 1);
             sinks[idx].selected = true;
             nr_selected_sinks++;
+            // Clear the upcoming line, it may have had an error before.
+            clear_line();
         }
 
         if (input[strlen(input) - 1] != '\n') {
             while ((c = getchar()) != '\n' && c != EOF) {
             }
         }
+
+        // To makes sure we're on the right line for the prompt redraw.
+        move_up_n_lines(1);
     }
 
     printf("\n");
