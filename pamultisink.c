@@ -117,9 +117,7 @@ static void sink_populate_local_cb(pa_context *c, const pa_sink_info *i,
 
     // Dynamically allocated inside the structure, so copy one by one.
     strncpy_check(sink_info->name, i->name, SINK_INPUT_MAX);
-    sink_info->name[SINK_INPUT_MAX - 1] = '\0';
     strncpy_check(sink_info->description, i->description, SINK_INPUT_MAX);
-    sink_info->description[SINK_INPUT_MAX - 1] = '\0';
     nr_sinks++;
 }
 
