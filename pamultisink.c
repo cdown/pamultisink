@@ -150,7 +150,7 @@ static int op_finish_and_unref(pa_context *pa_ctx, pa_mainloop *pa_ml,
     enum pa_operation_state state = pa_operation_get_state(pa_op);
 
     while (state == PA_OPERATION_RUNNING) {
-        pa_mainloop_iterate(pa_ml, 0, NULL);
+        pa_mainloop_iterate(pa_ml, 1, NULL);
         state = pa_operation_get_state(pa_op);
     }
 
