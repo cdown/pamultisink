@@ -83,7 +83,7 @@ static void module_load_cb(pa_context *c, uint32_t idx, void *userdata) {
 static void sink_populate_local_cb(pa_context *c, const pa_sink_info *i,
                                    int eol, void *userdata) {
     static bool warned = 0;
-    struct ms_sink_info *entry = &sinks[nr_sinks];
+    struct ms_sink_info *sink_info = &sinks[nr_sinks];
 
     (void)c;
     (void)userdata;
@@ -100,10 +100,11 @@ static void sink_populate_local_cb(pa_context *c, const pa_sink_info *i,
         return;
     }
 
-    strncpy_check(entry->name, i->name, SINK_INPUT_MAX);
-    strncpy_check(entry->description, i->description, SINK_INPUT_MAX);
-    entry->name[SINK_INPUT_MAX - 1] = '\0';
-    entry->description[SINK_INPUT_MAX - 1] = '\0';
+    // Dynamically allocated inside the structure, so copy one by one.
+    strncpy_check(sink_info->name, i->name, SINK_INPUT_MAX);
+    sink_info->name[SINK_INPUT_MAX - 1] = '\0';
+    strncpy_check(sink_info->description, i->description, SINK_INPUT_MAX);
+    sink_info->description[SINK_INPUT_MAX - 1] = '\0';
     nr_sinks++;
 }
 
