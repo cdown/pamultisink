@@ -8,7 +8,7 @@
 
 #define SINK_MAX 128
 #define SINK_ATTR_MAX 128
-#define SINK_INPUT_MAX 4
+#define SINK_INPUT_MAX 128
 #define MODULE_ARGS_MAX 2048
 
 #define MODULE_NAME "module-combine-sink"
@@ -162,8 +162,24 @@ static char *sink_select_from_user(char *args, size_t len) {
     while (nr_selected_sinks < SINK_MAX) {
         int c, idx, input_len;
         char input[SINK_INPUT_MAX];
+        char current[SINK_INPUT_MAX];
+        size_t pos = 0;
 
-        printf("Sink number to add, enter to finish: ");
+        for (int i = 0; i < nr_sinks; i++) {
+            if (sinks[i].selected) {
+                pos += snprintf_check(&current[pos], SINK_INPUT_MAX - pos,
+                                      "%d,", i);
+            }
+        }
+
+        if (pos == 0) {
+            snprintf_check(current, sizeof(current), "none");
+        } else {
+            current[pos - 1] = '\0';
+        }
+
+        printf("Sink number to add, enter to finish (current: %s): ", current);
+
         if (!fgets(input, sizeof(input), stdin)) {
             fprintf(stderr, "Error reading input.\n");
             return NULL;
