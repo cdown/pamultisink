@@ -300,7 +300,10 @@ static int run_pa_mainloop(void) {
                 return -pa_errno;
             case PA_CONTEXT_TERMINATED:
                 return 0;
-            default:
+            case PA_CONTEXT_UNCONNECTED:
+            case PA_CONTEXT_CONNECTING:
+            case PA_CONTEXT_AUTHORIZING:
+            case PA_CONTEXT_SETTING_NAME:
                 break;
         }
     }
