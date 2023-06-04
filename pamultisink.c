@@ -97,7 +97,7 @@ static void module_load_cb(pa_context *c, uint32_t idx, void *userdata) {
 
 static void sink_populate_local_cb(pa_context *c, const pa_sink_info *i,
                                    int eol, void *userdata) {
-    static bool warned = 0;
+    static bool warned = false;
     struct ms_sink_info *sink_info = &sinks[nr_sinks];
 
     (void)c;
