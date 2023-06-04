@@ -52,8 +52,8 @@ static void cleanup(void) {
     }
 }
 
-static size_t snprintf_check(char *buf, const size_t len, const char *fmt,
-                             ...) {
+__attribute__((format(printf, 3, 4))) static size_t snprintf_check(
+    char *buf, const size_t len, const char *fmt, ...) {
     int needed;
     va_list args;
 
