@@ -52,7 +52,8 @@ static void cleanup(void) {
     }
 }
 
-static size_t snprintf_check(char *buf, size_t len, const char *fmt, ...) {
+static size_t snprintf_check(char *buf, const size_t len, const char *fmt,
+                             ...) {
     int needed;
     va_list args;
 
@@ -84,7 +85,7 @@ static void module_unload_cb(pa_context *c, int success, void *userdata) {
     }
 }
 
-static void module_load_cb(pa_context *c, uint32_t idx, void *userdata) {
+static void module_load_cb(pa_context *c, const uint32_t idx, void *userdata) {
     (void)c;
     (void)userdata;
 
@@ -96,7 +97,7 @@ static void module_load_cb(pa_context *c, uint32_t idx, void *userdata) {
 }
 
 static void sink_populate_local_cb(pa_context *c, const pa_sink_info *i,
-                                   int eol, void *userdata) {
+                                   const int eol, void *userdata) {
     static bool warned = false;
     struct ms_sink_info *sink_info = &sinks[nr_sinks];
 
@@ -123,7 +124,8 @@ static void sink_populate_local_cb(pa_context *c, const pa_sink_info *i,
 
 static void module_find_and_unload_combined_sink_cb(pa_context *c,
                                                     const pa_module_info *i,
-                                                    int eol, void *userdata) {
+                                                    const int eol,
+                                                    void *userdata) {
     bool *unloaded = userdata;
     if (!eol && strcmp(i->name, MODULE_NAME) == 0) {
         *unloaded = true;
@@ -132,9 +134,9 @@ static void module_find_and_unload_combined_sink_cb(pa_context *c,
     }
 }
 
-static void module_make_args(char *buf, size_t buf_length,
+static void module_make_args(char *buf, const size_t buf_length,
                              char sel_sinks[][SINK_INPUT_MAX],
-                             size_t nr_sel_sinks) {
+                             const size_t nr_sel_sinks) {
     size_t pos = 0, i;
 
     pos += snprintf_check(&buf[pos], buf_length - pos,
@@ -176,7 +178,7 @@ static int op_finish_and_unref(pa_operation *pa_op) {
         move_up_n_lines(1);                                                    \
     } while (0)
 
-static char *sink_select_from_user(char *args, size_t len) {
+static char *sink_select_from_user(char *args, const size_t len) {
     char selected_sinks[SINK_MAX][SINK_INPUT_MAX];
     size_t nr_selected_sinks = 0;
 
