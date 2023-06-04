@@ -145,8 +145,7 @@ static void module_make_args(char *buf, size_t buf_length,
     buf[pos - 1] = '\0';
 }
 
-static int op_finish_and_unref(pa_context *pa_ctx, pa_mainloop *pa_ml,
-                               pa_operation *pa_op) {
+static int op_finish_and_unref(pa_operation *pa_op) {
     int ret = 0, pa_errno;
     enum pa_operation_state state = pa_operation_get_state(pa_op);
 
@@ -254,7 +253,7 @@ static char *sink_select_from_user(char *args, size_t len) {
     return args;
 }
 
-static int run_pa_mainloop(pa_context *pa_ctx, pa_mainloop *pa_ml) {
+static int run_pa_mainloop(void) {
     int pa_errno;
     char args[MODULE_ARGS_MAX];
     pa_operation *unload_op;
@@ -269,10 +268,8 @@ static int run_pa_mainloop(pa_context *pa_ctx, pa_mainloop *pa_ml) {
                     pa_ctx, module_find_and_unload_combined_sink_cb,
                     (void *)&unloaded);
 
-                expect(op_finish_and_unref(
-                           pa_ctx, pa_ml,
-                           pa_context_get_sink_info_list(
-                               pa_ctx, sink_populate_local_cb, NULL)) == 0);
+                expect(op_finish_and_unref(pa_context_get_sink_info_list(
+                           pa_ctx, sink_populate_local_cb, NULL)) == 0);
 
                 if (nr_sinks == 0) {
                     fprintf(stderr, "No sinks available\n");
@@ -284,15 +281,14 @@ static int run_pa_mainloop(pa_context *pa_ctx, pa_mainloop *pa_ml) {
                 }
 
                 // Must be done or we may unload the new one
-                expect(op_finish_and_unref(pa_ctx, pa_ml, unload_op) == 0);
+                expect(op_finish_and_unref(unload_op) == 0);
                 if (unloaded) {
                     printf("Found and unloaded existing combined sinks.\n");
                 }
 
-                expect(op_finish_and_unref(
-                           pa_ctx, pa_ml,
-                           pa_context_load_module(pa_ctx, MODULE_NAME, args,
-                                                  module_load_cb, NULL)) == 0);
+                expect(op_finish_and_unref(pa_context_load_module(
+                           pa_ctx, MODULE_NAME, args, module_load_cb, NULL)) ==
+                       0);
 
                 return 0;
             case PA_CONTEXT_FAILED:
@@ -318,7 +314,7 @@ int main(void) {
     expect(pa_ctx = pa_context_new(pa_mlapi, APP_NAME));
     expect(pa_context_connect(pa_ctx, NULL, PA_CONTEXT_NOAUTOSPAWN, NULL) == 0);
 
-    exit_code = !!run_pa_mainloop(pa_ctx, pa_ml);
+    exit_code = !!run_pa_mainloop();
 
     cleanup();
 
