@@ -8,3 +8,5 @@ PenaltyReturnTypeOnItsOwnLine: 999
 SortIncludes: true
 UseTab: Never
 SpaceBeforeParens: ControlStatementsExceptForEachMacros
+
+BinPackArguments: false

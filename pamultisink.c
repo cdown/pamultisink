@@ -139,8 +139,10 @@ static void module_make_args(char *buf, const size_t buf_length,
                              const size_t nr_sel_sinks) {
     size_t pos = 0, i;
 
-    pos += snprintf_check(&buf[pos], buf_length - pos,
-                          "sink_name=%s slaves=", COMBINED_SINK_NAME);
+    pos += snprintf_check(&buf[pos],
+                          buf_length - pos,
+                          "sink_name=%s slaves=",
+                          COMBINED_SINK_NAME);
     for (i = 0; i < nr_sel_sinks; i++) {
         pos += snprintf_check(&buf[pos], buf_length - pos, "%s,", sel_sinks[i]);
     }
@@ -158,8 +160,8 @@ static int op_finish_and_unref(pa_operation *pa_op) {
 
     if (state != PA_OPERATION_DONE) {
         pa_errno = pa_context_errno(pa_ctx);
-        fprintf(stderr, "PulseAudio operation failed: %s\n",
-                pa_strerror(pa_errno));
+        fprintf(
+            stderr, "PulseAudio operation failed: %s\n", pa_strerror(pa_errno));
         ret = -pa_errno;
     }
 
@@ -195,8 +197,8 @@ static char *sink_select_from_user(char *args, const size_t len) {
 
         for (int i = 0; i < nr_sinks; i++) {
             if (sinks[i].selected) {
-                pos += snprintf_check(&sel_sink_nrs[pos], SINK_INPUT_MAX - pos,
-                                      "%d,", i);
+                pos += snprintf_check(
+                    &sel_sink_nrs[pos], SINK_INPUT_MAX - pos, "%d,", i);
             }
         }
 
@@ -226,7 +228,8 @@ static char *sink_select_from_user(char *args, const size_t len) {
         } else if (sinks[idx].selected) {
             retryable_sink_select_error("Sink already selected.\n");
         } else {
-            strncpy_check(selected_sinks[nr_selected_sinks], sinks[idx].name,
+            strncpy_check(selected_sinks[nr_selected_sinks],
+                          sinks[idx].name,
                           SINK_INPUT_MAX - 1);
             sinks[idx].selected = true;
             nr_selected_sinks++;
@@ -267,7 +270,8 @@ static int run_pa_mainloop(void) {
         switch (pa_context_get_state(pa_ctx)) {
             case PA_CONTEXT_READY:
                 unload_op = pa_context_get_module_info_list(
-                    pa_ctx, module_find_and_unload_combined_sink_cb,
+                    pa_ctx,
+                    module_find_and_unload_combined_sink_cb,
                     (void *)&unloaded);
 
                 expect(op_finish_and_unref(pa_context_get_sink_info_list(
@@ -295,7 +299,8 @@ static int run_pa_mainloop(void) {
                 return 0;
             case PA_CONTEXT_FAILED:
                 pa_errno = pa_context_errno(pa_ctx);
-                fprintf(stderr, "PulseAudio context failed: %s\n",
+                fprintf(stderr,
+                        "PulseAudio context failed: %s\n",
                         pa_strerror(pa_errno));
                 return -pa_errno;
             case PA_CONTEXT_TERMINATED:
