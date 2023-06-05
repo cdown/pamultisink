@@ -1,3 +1,4 @@
+BinPackArguments: false
 BreakStringLiterals: false
 ColumnLimit: 80
 IndentCaseLabels: true
@@ -5,7 +6,5 @@ IndentPPDirectives: BeforeHash
 IndentWidth: 4
 PenaltyBreakComment: 0
 SortIncludes: true
-UseTab: Never
 SpaceBeforeParens: ControlStatementsExceptForEachMacros
-
-BinPackArguments: false
+UseTab: Never
